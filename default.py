@@ -24,7 +24,7 @@ except:
 
 # cache for one hour
 cache = StorageServer.StorageServer(PLUGIN_NAME, 1)
-#cache.delete("%")
+cache.delete("%")
 
 def build_url(query):
     return base_url + '?' + urllib.urlencode(query)
@@ -43,13 +43,17 @@ latest_ep=int(cache.cacheFunction(getLatestEp))
 
 def getEpDetails(ep):
     log("http://fernsehkritik.tv/folge-"+str(ep)+"/")
-    response = opener.open("http://fernsehkritik.tv/folge-"+str(ep)+"/play")
-    html=response.read().decode('utf-8')
-    response.close()
-    soup = BeautifulSoup(html)
-    url = soup.find_all('source')[0]['src'] or ""
-    title = soup.find('h3').contents[0] or ""
-    return url, title
+    try:
+        response = opener.open("http://fernsehkritik.tv/folge-"+str(ep)+"/play")
+        html=response.read().decode('utf-8')
+        response.close()
+        soup = BeautifulSoup(html)
+        url = soup.find_all('source')[0]['src'] or ""
+        title = soup.find('h3').contents[0] or ""
+        return url, title
+    except Exception as e:
+        log(str(e))
+        return "","Fehler beim Laden der Folge"
 
 def addItems(start):
     if (start>latest_ep):
