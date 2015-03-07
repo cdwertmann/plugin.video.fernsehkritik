@@ -24,7 +24,8 @@ except:
 
 # cache for one hour
 cache = StorageServer.StorageServer(PLUGIN_NAME, 1)
-cache.delete("%")
+# disable cache for testing
+#cache.delete("%")
 
 def build_url(query):
     return base_url + '?' + urllib.urlencode(query)
