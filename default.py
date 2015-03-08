@@ -31,11 +31,11 @@ def build_url(query):
     return base_url + '?' + urllib.urlencode(query)
 
 def log(msg):
-    xbmc.log(PLUGIN_NAME + ": "+ str(msg), level=xbmc.LOGNOTICE)
+    xbmc.log(PLUGIN_NAME + ": "+ msg.decode('ascii', 'ignore'), level=xbmc.LOGNOTICE)
 
 def getLatestEp():
     response = opener.open("http://fernsehkritik.tv/feed")
-    html=response.read().decode('utf-8')
+    html=response.read()
     response.close()
     d=xmltodict.parse(html)
     return re.findall(r'\d+',d['rss']['channel']['item'][0]['link'])[0]
@@ -43,17 +43,22 @@ def getLatestEp():
 latest_ep=int(cache.cacheFunction(getLatestEp))
 
 def getEpDetails(ep):
-    log("http://fernsehkritik.tv/folge-"+str(ep)+"/")
-    try:
-        response = opener.open("http://fernsehkritik.tv/folge-"+str(ep)+"/play")
-        html=response.read().decode('utf-8')
-        response.close()
-        soup = BeautifulSoup(html)
-        url = soup.find_all('source')[0]['src'] or ""
-        title = soup.find('h3').contents[0] or ""
-        return url, title
-    except Exception as e:
-        log(str(e))
+    for attempt in range(3):
+        try:
+            response = opener.open("http://fernsehkritik.tv/folge-"+str(ep)+"/play")
+            html=response.read()
+            response.close()
+            soup = BeautifulSoup(html)        
+            url = soup.find_all('source')[0]['src'] or ""
+            title = soup.find('h3').contents[0] or ""
+            return url, title
+        except Exception as e:
+            log("retry fetching episode "+str(ep))
+            continue
+
+    if (ep==latest_ep):
+        return "","neueste Folge momentan nur im Abo"
+    else:
         return "","Fehler beim Laden der Folge"
 
 def addItems(start):
