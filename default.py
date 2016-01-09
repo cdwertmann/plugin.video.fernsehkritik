@@ -49,7 +49,7 @@ def getEpDetails(ep):
             html=response.read()
             response.close()
             soup = BeautifulSoup(html)        
-            url = soup.find_all('source')[0]['src'] or ""
+            url = re.search(re.escape('{ type: "video/webm",src:  "')+'(.*?)'+re.escape('" }'),html).group(1) or ""
             title = soup.find('h3').contents[0] or ""
             return url, title
         except Exception as e:
